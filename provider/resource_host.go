@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 
-	"github.com/tpretz/go-zabbix-api"
+	"github.com/eugraphiy/go-zabbix-api"
 )
 
 var HSNMP_LOOKUP = map[string]zabbix.ItemType{
@@ -196,6 +196,11 @@ var hostSchemaBase = map[string]*schema.Schema{
 		Type:         schema.TypeString,
 		Description:  "FQDN of host",
 		ValidateFunc: validation.StringIsNotWhiteSpace,
+	},
+	"description": &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "Description of the host",
 	},
 	"proxyid": &schema.Schema{
 		Type:        schema.TypeString,
@@ -544,6 +549,7 @@ func buildHostObject(d *schema.ResourceData, m interface{}) (*zabbix.Host, error
 	item := zabbix.Host{
 		Host:          d.Get("host").(string),
 		Name:          d.Get("name").(string),
+		Description:   d.Get("description").(string),
 		ProxyID:       d.Get("proxyid").(string),
 		InventoryMode: HINV_LOOKUP[d.Get("inventory_mode").(string)],
 		Status:        0,
@@ -674,6 +680,7 @@ func hostRead(d *schema.ResourceData, m interface{}, params zabbix.Params) error
 	d.SetId(host.HostID)
 	d.Set("name", host.Name)
 	d.Set("host", host.Host)
+	d.Set("description", host.Description)
 	d.Set("proxyid", host.ProxyID)
 	d.Set("enabled", host.Status == 0)
 	d.Set("inventory_mode", HINV_LOOKUP_REV[host.InventoryMode])
